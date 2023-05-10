@@ -5,26 +5,42 @@ const s3 = new AWS.S3()
 const sns = new AWS.SNS({ apiVersion: '2012-11-05' })
 
 exports.helloFromLambdaHandler = async () => {
+    let s3Object = null
+    let data = null
+    let result = null
     // 원본 버킷으로부터 파일 읽기
-    const s3Object = await s3.getObject({
-        Bucket: "devops4-serverless-photo-src-bucket",
-        Key: "example1.jpg"
-    }).promise()
-
+    try {
+        s3Object = await s3.getObject({
+            Bucket: "devops4-serverless-photo-src-bucket",
+            Key: "example1.jpg"
+        }).promise()
+    } catch (e) {
+        console.log("Get error while getting object from s3")
+        console.log(e)
+    }
     // // 이미지 리사이즈, sharp 라이브러리가 필요합니다.
-    const data = await sharp(s3Object.Body)
-        .resize(200)
-        .jpeg({ mozjpeg: true })
-        .toBuffer()
-
+    try {
+        data = await sharp(s3Object.Body)
+            .resize(200)
+            .jpeg({ mozjpeg: true })
+            .toBuffer()
+    } catch (e) {
+        console.log("Get error while converting image")
+        console.log(e)
+    }
     // // 대상 버킷으로 파일 쓰기
-    const result = await s3.putObject({
-        Bucket: "devops4-serverless-photo-src-bucket",
-        Key: "example1_thumbnail.jpg",
-        ContentType: 'image/jpeg',
-        Body: data,
-        ACL: 'public-read'
-    }).promise()
+    try {
+        result = await s3.putObject({
+            Bucket: "devops4-serverless-photo-src-bucket",
+            Key: "example1_thumbnail.jpg",
+            ContentType: 'image/jpeg',
+            Body: data,
+            ACL: 'public-read'
+        }).promise()
+    } catch (e) {
+        console.log("Get error while saving images")
+        console.log(e)
+    }
 
     try {
         await sns.publish({
@@ -33,6 +49,7 @@ exports.helloFromLambdaHandler = async () => {
             Message: "힘들다 진짜.."
         }).promise()
     } catch (e) {
+        console.log("Get error while publishing notification")
         console.log(e)
     }
 
