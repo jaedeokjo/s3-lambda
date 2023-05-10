@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const sharp = require("sharp"); // Used for image resizing
 
 const s3 = new AWS.S3()
+const sns = new AWS.SNS({ apiVersion: '2012-11-05' })
 
 exports.helloFromLambdaHandler = async () => {
     // 원본 버킷으로부터 파일 읽기
@@ -24,6 +25,16 @@ exports.helloFromLambdaHandler = async () => {
         Body: data,
         ACL: 'public-read'
     }).promise()
+
+    try {
+        await sns.publish({
+            TopicArn: "arn:aws:sns:ap-northeast-2:214883190683:MyTopic",
+            Subject: "띵동",
+            Message: "힘들다 진짜.."
+        }).promise()
+    } catch (e) {
+        console.log(e)
+    }
 
     return { statusCode: 200, body: result };
 }
