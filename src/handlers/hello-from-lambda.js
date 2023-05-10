@@ -6,6 +6,15 @@ const sns = new AWS.SNS({ apiVersion: '2012-11-05' })
 
 exports.helloFromLambdaHandler = async (event) => {
     console.log(JSON.stringify(event))
+    let s3Event = null
+    let updatedKeyName = null
+    try {
+        s3Event = event.Records[0].s3
+        updatedKeyName = s3Event.object.key.split(".")[0]
+    } catch (e) {
+        console.log("Can't get s3 event and key")
+        console.log(e)
+    }
 
     let s3Object = null
     let data = null
@@ -14,7 +23,7 @@ exports.helloFromLambdaHandler = async (event) => {
     try {
         s3Object = await s3.getObject({
             Bucket: "devops4-serverless-photo-src-bucket",
-            Key: "example1.jpg"
+            Key: updatedKeyName
         }).promise()
     } catch (e) {
         console.log("Get error while getting object from s3")
@@ -34,7 +43,7 @@ exports.helloFromLambdaHandler = async (event) => {
     try {
         result = await s3.putObject({
             Bucket: "devops4-serverless-photo-target-bucket",
-            Key: "example1_thumbnail.jpg",
+            Key: `${updatedKeyName}_convert`,
             ContentType: 'image/jpeg',
             Body: data,
             ACL: 'public-read'
