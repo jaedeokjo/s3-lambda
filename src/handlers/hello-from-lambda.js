@@ -10,7 +10,7 @@ exports.helloFromLambdaHandler = async (event) => {
     let updatedKeyName = null
     try {
         s3Event = event.Records[0].s3
-        updatedKeyName = s3Event.object.key.split(".")[0]
+        updatedKeyName = s3Event.object.key
     } catch (e) {
         console.log("Can't get s3 event and key")
         console.log(e)
@@ -43,7 +43,7 @@ exports.helloFromLambdaHandler = async (event) => {
     try {
         result = await s3.putObject({
             Bucket: "devops4-serverless-photo-target-bucket",
-            Key: `${updatedKeyName}_convert`,
+            Key: updatedKeyName,
             ContentType: 'image/jpeg',
             Body: data,
             ACL: 'public-read'
