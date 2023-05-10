@@ -15,12 +15,13 @@ lint = true
 
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
-confirm_changeset = true
+confirm_changeset = false
 resolve_s3 = true
 s3_prefix = "s3-lambda"
 region = "ap-northeast-2"
 disable_rollback = true
 image_repositories = []
+parameter_overrides = "SourceBucketName=\"devops4-serverless-photo-src-bucket\" QueueName=\"devops4-serverless-photo-sqs\" DestinationBucketName=\"devops4-serverless-photo-target-bucket\""
 
 [default.package.parameters]
 resolve_s3 = true

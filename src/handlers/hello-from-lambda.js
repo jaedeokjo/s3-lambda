@@ -3,13 +3,26 @@ const sharp = require("sharp"); // Used for image resizing
 
 const s3 = new AWS.S3()
 const sns = new AWS.SNS({ apiVersion: '2012-11-05' })
+const sourceBucketName = process.env.SOURCE_BUCKETNAME
+const destinationBucketName = process.env.DESTINATION_BUCKETNAME
+const snsTopicName = process.env.SNS_TOPICNAME
 
 exports.helloFromLambdaHandler = async (event) => {
     console.log(JSON.stringify(event))
+
+    let s3EventString = null
+    let s3FullEvent = null
+    try {
+        s3EventString = event.Records[0].body
+        s3FullEvent = JSON.parse(s3EventString)
+    } catch (e) {
+        console.log("Can't get s3 event body and parse string")
+        console.log(e)
+    }
     let s3Event = null
     let updatedKeyName = null
     try {
-        s3Event = event.Records[0].s3
+        s3Event = s3FullEvent.Records[0].s3
         updatedKeyName = s3Event.object.key
     } catch (e) {
         console.log("Can't get s3 event and key")
@@ -22,7 +35,7 @@ exports.helloFromLambdaHandler = async (event) => {
     // 원본 버킷으로부터 파일 읽기
     try {
         s3Object = await s3.getObject({
-            Bucket: "devops4-serverless-photo-src-bucket",
+            Bucket: sourceBucketName,
             Key: updatedKeyName
         }).promise()
     } catch (e) {
@@ -42,7 +55,7 @@ exports.helloFromLambdaHandler = async (event) => {
     // // 대상 버킷으로 파일 쓰기
     try {
         result = await s3.putObject({
-            Bucket: "devops4-serverless-photo-target-bucket",
+            Bucket: destinationBucketName,
             Key: updatedKeyName,
             ContentType: 'image/jpeg',
             Body: data,
@@ -55,9 +68,9 @@ exports.helloFromLambdaHandler = async (event) => {
 
     try {
         await sns.publish({
-            TopicArn: "arn:aws:sns:ap-northeast-2:214883190683:MyTopic",
-            Subject: "제목",
-            Message: "내용"
+            TopicArn: snsTopicName,
+            Subject: "thumbnail updated",
+            Message: updatedKeyName
         }).promise()
     } catch (e) {
         console.log("Get error while publishing notification")
