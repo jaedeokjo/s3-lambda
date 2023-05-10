@@ -3,11 +3,14 @@
     "description": "replaced-by-user-input",
     "version": "0.0.1",
     "private": true,
-    "dependencies": {},
+    "dependencies": {
+        "aws-sdk": "^2.1375.0"
+    },
     "devDependencies": {
         "jest": "^26.6.3"
     },
     "scripts": {
-        "test": "jest"
+        "test": "jest",
+        "preinstall": "npm install --platform=linux --arch=x64 --no-save sharp"
     }
 }
