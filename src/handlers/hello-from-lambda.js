@@ -4,7 +4,9 @@ const sharp = require("sharp"); // Used for image resizing
 const s3 = new AWS.S3()
 const sns = new AWS.SNS({ apiVersion: '2012-11-05' })
 
-exports.helloFromLambdaHandler = async () => {
+exports.helloFromLambdaHandler = async (event) => {
+    console.log(JSON.stringify(event))
+
     let s3Object = null
     let data = null
     let result = null
@@ -31,7 +33,7 @@ exports.helloFromLambdaHandler = async () => {
     // // 대상 버킷으로 파일 쓰기
     try {
         result = await s3.putObject({
-            Bucket: "devops4-serverless-photo-src-bucket",
+            Bucket: "devops4-serverless-photo-target-bucket",
             Key: "example1_thumbnail.jpg",
             ContentType: 'image/jpeg',
             Body: data,
@@ -45,8 +47,8 @@ exports.helloFromLambdaHandler = async () => {
     try {
         await sns.publish({
             TopicArn: "arn:aws:sns:ap-northeast-2:214883190683:MyTopic",
-            Subject: "띵동",
-            Message: "힘들다 진짜.."
+            Subject: "제목",
+            Message: "내용"
         }).promise()
     } catch (e) {
         console.log("Get error while publishing notification")
